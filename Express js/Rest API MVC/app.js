@@ -1,7 +1,12 @@
 const express = require("express")
 const cors = require("cors")
 const app = express()
+require("./config/db")
 
+// importing out route
+const userRouter = require("./routes/user.route")
+
+app.use("/api/users", userRouter)
 app.use(cors())
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
