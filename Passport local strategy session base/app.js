@@ -2,6 +2,8 @@ const express = require("express")
 const cors = require("cors")
 const ejs = require("ejs")
 const app = express()
+const bcrypt = require("bcrypt")
+const saltRounds = 10
 const User = require("./models/user.model")
 require("./config/database")
 
@@ -27,9 +29,16 @@ app.post("/register", async (req, res) => {
     if (user) {
       return res.status(400).send("user already exist")
     }
-    const newUser = new User(req.body)
-    await newUser.save()
-    res.status(201).redirect("/login")
+    // hashing and salting //
+    bcrypt.hash(req.body.password, saltRounds, async (err, hash) => {
+      // Store hash in your password DB.
+      const newUser = new User({
+        username: req.body.username,
+        password: hash
+      })
+      await newUser.save()
+      res.status(201).redirect("/login")
+    })
   } catch (error) {
     res.status(500).send(error.message)
   }
