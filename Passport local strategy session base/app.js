@@ -1,11 +1,31 @@
 const express = require("express")
+require("dotenv").config()
 const cors = require("cors")
 const ejs = require("ejs")
 const app = express()
 const bcrypt = require("bcrypt")
 const saltRounds = 10
+const passport = require("passport")
+const session = require("express-session")
+const MongoStore = require("connect-mongo")
 const User = require("./models/user.model")
 require("./config/database")
+
+app.set("trust proxy", 1)
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+      collectionName: "sessions"
+    })
+  })
+)
+
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.set("view engine", "ejs")
 app.use(cors())
