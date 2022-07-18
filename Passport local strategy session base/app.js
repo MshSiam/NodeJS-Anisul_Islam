@@ -65,8 +65,17 @@ app.post("/register", async (req, res) => {
   }
 })
 
+// middlewere to check login //
+
+const checkLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return res.redirect("/profile")
+  }
+  next()
+}
+
 // --------- login : get ------------//
-app.get("/login", (req, res) => {
+app.get("/login", checkLoggedIn, (req, res) => {
   res.render("login")
 })
 // --------- login : post ------------//
@@ -81,14 +90,32 @@ app.post(
   }
 )
 
+// middlewere to check authentication //
+
+const checkAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next()
+  }
+  res.render("login")
+}
+
 // --------- profile : protected route ------------//
-app.get("/profile", (req, res) => {
+app.get("/profile", checkAuthenticated, (req, res) => {
   res.render("profile")
 })
 
 // --------- login : post ------------//
 app.get("/logout", (req, res) => {
-  res.render("index")
+  try {
+    req.logout((err) => {
+      if (err) {
+        return next(err)
+      }
+      res.redirect("/")
+    })
+  } catch (error) {
+    res.status(500).send(error.message)
+  }
 })
 
 module.exports = app
