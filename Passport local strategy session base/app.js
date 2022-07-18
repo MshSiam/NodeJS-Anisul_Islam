@@ -1,5 +1,7 @@
 const express = require("express")
 require("dotenv").config()
+require("./config/database")
+require("./config/passport")
 const cors = require("cors")
 const ejs = require("ejs")
 const app = express()
@@ -9,7 +11,6 @@ const passport = require("passport")
 const session = require("express-session")
 const MongoStore = require("connect-mongo")
 const User = require("./models/user.model")
-require("./config/database")
 
 app.set("trust proxy", 1)
 app.use(
@@ -69,13 +70,16 @@ app.get("/login", (req, res) => {
   res.render("login")
 })
 // --------- login : post ------------//
-app.post("/login", (req, res) => {
-  try {
-    res.status(200).send("user is loggedin")
-  } catch (error) {
-    res.status(500).send(error.message)
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+    successRedirect: "/profile"
+  }),
+  function (req, res) {
+    res.redirect("/")
   }
-})
+)
 
 // --------- profile : protected route ------------//
 app.get("/profile", (req, res) => {
