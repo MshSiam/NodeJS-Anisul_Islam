@@ -4,6 +4,7 @@ const app = express()
 const bcrypt = require("bcrypt")
 const saltRounds = 10
 require("./config/database")
+require("dotenv").config()
 const User = require("./models/user.model")
 const jwt = require("jsonwebtoken")
 
@@ -55,8 +56,8 @@ app.post("/register", async (req, res) => {
   }
 })
 // ---------- login route ---------//
-app.post("/login", (req, res) => {
-  const user = User.findOne({ username: req.body.username })
+app.post("/login", async (req, res) => {
+  const user = await User.findOne({ username: req.body.username })
   if (!user) {
     return res.status(401).send({
       success: false,
@@ -73,7 +74,14 @@ app.post("/login", (req, res) => {
     id: user._id,
     username: user.username
   }
-  const token = jwt.sign(payload, process.env.SECRET_KEY, [options, callback])
+  const token = jwt.sign(payload, process.env.SECRET_KEY, {
+    expiresIn: "2d"
+  })
+  return res.status(200).send({
+    success: true,
+    message: "successfully logged in",
+    token: "Bearer" + token
+  })
 })
 
 // ---------- profile route (procted)---------//
